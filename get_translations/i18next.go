@@ -43,14 +43,10 @@ func getI18Next(apiKey, dir, filter string) error {
 			if project != locoProject {
 				return fmt.Errorf("got unexpected project in i18next response from loco: %s", project)
 			}
-			// what we want to do is write "en.json" if en-US is the only locale using en
-			// but if we also have en-GB then the filenames will be en-US.json and en-GB.json
-			// currently, pt-PT and pt-BR are the only locales in our system with the same base language
-			lang := language.MustParse(locale)
-			baseLang, _ := lang.Base()
-			langFile := locale
-			if localesWithBase(localeCodes, baseLang) == 1 {
-				langFile = baseLang.String()
+			langFile := locales[locale]
+			if langFile == "" {
+				fmt.Printf("could not find locale mapping for %s. skipping.\n", locale)
+				continue
 			}
 			outFile, err := os.Create(filepath.Join(dir, fmt.Sprintf("%s.json", langFile)))
 			if err != nil {

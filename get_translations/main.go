@@ -20,7 +20,7 @@ This is the "po" command mode.
 2. Generates the locales/asset_ids.go file. Usually run via go generate.
 This is the "assets" command mode.
 
-3. Pulls down the i18nextv3 format from loco and writes each locale to a separate json file.
+3. Pulls down the i18nextv4 format from loco and writes each locale to a separate json file.
 This is the "json" command mode.
 
 4. Pulls down the yaml format for use with hugo.

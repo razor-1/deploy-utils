@@ -32,4 +32,9 @@ var locales = map[string]string{
 	"sq-AL": "sq",
 	"ky-KG": "ky",
 	"vi-VN": "vi",
+	"tl":    "tl",
+	"sl":    "sl",
+	"kea":   "kea",
+	"ase":   "ase",
+	"gu-IN": "gu",
 }
