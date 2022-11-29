@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/language"
 )
 
@@ -48,19 +49,42 @@ func getI18Next(apiKey, dir, filter string) error {
 				fmt.Printf("could not find locale mapping for %s. skipping.\n", locale)
 				continue
 			}
-			outFile, err := os.Create(filepath.Join(dir, fmt.Sprintf("%s.json", langFile)))
+
+			fileName := filepath.Join(dir, fmt.Sprintf("%s.json", langFile))
+			err = writeToFile(fileName, data)
 			if err != nil {
 				return err
 			}
-			je := json.NewEncoder(outFile)
-			err = je.Encode(data)
+			l, err := language.Parse(langFile)
 			if err != nil {
-				return err
+				return fmt.Errorf("language.Parse failed for %s: %v", locale, err)
 			}
-			outFile.Close()
+			if l.String() != langFile {
+				// go's language parsing ends up with a different code than we expect. copy the file out so that we have both.
+				log.Infof("mismatch for code %s: %s", langFile, l.String())
+				fileName = filepath.Join(dir, fmt.Sprintf("%s.json", l.String()))
+				err = writeToFile(fileName, data)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 
+	return nil
+}
+
+func writeToFile(path string, data interface{}) error {
+	outFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+	je := json.NewEncoder(outFile)
+	err = je.Encode(data)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
