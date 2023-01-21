@@ -96,7 +96,7 @@ func localeFromPath(dir string) string {
 }
 
 func outputFromZip(baseDir, zipPath string, zipFile *zip.File) (poDir string, err error) {
-	poFile, poDir, err := createOutputFile(baseDir, zipPath, false)
+	poFile, poDir, err := createOutputFile(baseDir, zipPath, true)
 	if err != nil {
 		return
 	}
