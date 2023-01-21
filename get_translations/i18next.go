@@ -46,8 +46,8 @@ func getI18Next(apiKey, dir, filter string) error {
 			}
 			langFile := locales[locale]
 			if langFile == "" {
-				fmt.Printf("could not find locale mapping for %s. skipping.\n", locale)
-				continue
+				langFile = locale
+				fmt.Printf("could not find locale mapping for %s. using %s\n", locale, langFile)
 			}
 
 			fileName := filepath.Join(dir, fmt.Sprintf("%s.json", langFile))
