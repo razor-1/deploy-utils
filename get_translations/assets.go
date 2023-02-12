@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
@@ -14,7 +13,6 @@ import (
 
 const (
 	tplName       = "assets.tpl"
-	tplDir        = "cmd/get_translations"
 	locoAssetsURL = locoBaseURL + "/assets"
 )
 
@@ -39,7 +37,7 @@ func generateAssets(apiKey string, args []string) error {
 		locoAssets[i].GoIdentifier = validConstant(asset.ID)
 	}
 
-	tmpl, err := template.New("assets.tpl").ParseFiles(filepath.Join(tplDir, tplName))
+	tmpl, err := template.New("assets.tpl").ParseFiles(tplName)
 	if err != nil {
 		return err
 	}
