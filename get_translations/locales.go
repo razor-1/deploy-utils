@@ -37,4 +37,8 @@ var locales = map[string]string{
 	"kea":   "kea",
 	"ase":   "ase",
 	"gu-IN": "gu",
+	"tr-TR": "tr",
+	"ht":    "ht",
+	"sq":    "sq",
+	"pa":    "pa",
 }
