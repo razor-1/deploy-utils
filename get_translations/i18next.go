@@ -52,7 +52,6 @@ func getI18Next(apiKey, dir, filter string) error {
 
 			fileName := filepath.Join(dir, fmt.Sprintf("%s.json", langFile))
 			err = writeToFile(fileName, data)
-			log.Infof("wrote to file: %s", fileName)
 			if err != nil {
 				return err
 			}
@@ -66,7 +65,6 @@ func getI18Next(apiKey, dir, filter string) error {
 				log.Infof("mismatch for code %s: %s", langFile, l.String())
 				fileName = filepath.Join(dir, fmt.Sprintf("%s.json", l.String()))
 				err = writeToFile(fileName, data)
-				log.Infof("wrote to file: %s", fileName)
 				if err != nil {
 					return err
 				}
