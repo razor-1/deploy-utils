@@ -52,6 +52,7 @@ func getI18Next(apiKey, dir, filter string) error {
 
 			fileName := filepath.Join(dir, fmt.Sprintf("%s.json", langFile))
 			err = writeToFile(fileName, data)
+			log.Infof("wrote to file: %s", fileName)
 			if err != nil {
 				return err
 			}
@@ -59,11 +60,13 @@ func getI18Next(apiKey, dir, filter string) error {
 			if err != nil {
 				return fmt.Errorf("language.Parse failed for %s: %v", locale, err)
 			}
-			if l.String() != langFile {
+			if l.String() != langFile && l.String() != "ca-valencia" {
+				// the ca-valencia hack is because some filesystems don't like the same file name with different case
 				// go's language parsing ends up with a different code than we expect. copy the file out so that we have both.
 				log.Infof("mismatch for code %s: %s", langFile, l.String())
 				fileName = filepath.Join(dir, fmt.Sprintf("%s.json", l.String()))
 				err = writeToFile(fileName, data)
+				log.Infof("wrote to file: %s", fileName)
 				if err != nil {
 					return err
 				}
