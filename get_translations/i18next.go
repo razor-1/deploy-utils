@@ -15,7 +15,7 @@ const (
 	locoJsonExportURL = locoBaseURL + "/export/all.json"
 	locoI18NextFormat = "i18next4"
 	locoProject       = "hourglass"
-	locoFallback      = "en-US"
+	locoFallback      = "auto"
 )
 
 // retrieve loco assets in i18next format and write each locale's data to a separate json file

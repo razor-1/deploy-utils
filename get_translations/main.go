@@ -25,6 +25,9 @@ This is the "json" command mode.
 
 4. Pulls down the yaml format for use with hugo.
 This is the "hugoyaml" command mode.
+
+5. Creates the list of BCP 47 fallback locales for each language.
+This is the "fallback" command mode.
 */
 
 const (
@@ -80,7 +83,14 @@ func main() {
 		Args: cobra.MinimumNArgs(1),
 	}
 
-	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd)
+	fallbackCmd := &cobra.Command{
+		Use: "fallback",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return getFallbackLangs(apiKey)
+		},
+	}
+
+	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd)
 	err := rootCmd.Execute()
 	if err != nil {
 		log.Fatalf("error encountered: %v", err)
