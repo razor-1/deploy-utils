@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +28,9 @@ This is the "hugoyaml" command mode.
 
 5. Creates the list of BCP 47 fallback locales for each language.
 This is the "fallback" command mode.
+
+6. Pulls down the Android format and writes it into the resource directories.
+This is the "android" command mode.
 */
 
 const (
@@ -35,12 +38,14 @@ const (
 	apiKeyVar   = "LOCO_RO_API_KEY"
 	authHeader  = "Authorization"
 	locoBaseURL = "https://localise.biz/api"
+	tagMobile   = "mobile-apps"
 )
 
 func main() {
 	apiKey := os.Getenv(apiKeyVar)
 	if apiKey == "" {
-		log.Fatalf("missing api key: provide it in the environment variable %s", apiKeyVar)
+		fmt.Printf("missing api key: provide it in the environment variable %s\n", apiKeyVar)
+		os.Exit(1)
 	}
 
 	rootCmd := &cobra.Command{
@@ -90,10 +95,18 @@ func main() {
 		},
 	}
 
-	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd)
+	androidCmd := &cobra.Command{
+		Use: "android <directory>",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return updateAndroidAssets(apiKey, args[0], tagMobile)
+		},
+		Args: cobra.MinimumNArgs(1),
+	}
+
+	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd)
 	err := rootCmd.Execute()
 	if err != nil {
-		log.Fatalf("error encountered: %v", err)
+		panic(err)
 	}
 }
 
@@ -110,7 +123,8 @@ func locoRequest(apiKey, URL string, queryParams url.Values) (resp *http.Respons
 	req.Header.Add(authHeader, fmt.Sprintf("Loco %s", apiKey))
 	resp, err = client.Do(req)
 	if err != nil {
-		log.Fatalf("error fetching: %v", err)
+		slog.Error("error fetching", slog.Any("err", err))
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
