@@ -5,12 +5,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/language"
 )
 
@@ -36,12 +36,12 @@ func getPOExport(apiKey string, args []string) error {
 func writeLocoPO(baseDir string, zipData io.ReadCloser) error {
 	body, err := io.ReadAll(zipData)
 	if err != nil {
-		log.Fatalf("error reading all response bytes: %v", err)
+		return fmt.Errorf("error reading all response bytes: %v", err)
 	}
 
 	zipReader, err := zip.NewReader(bytes.NewReader(body), int64(len(body)))
 	if err != nil {
-		log.Fatalf("zip.NewReader error: %v", err)
+		return fmt.Errorf("zip.NewReader error: %v", err)
 	}
 
 	var readErr error
@@ -64,21 +64,26 @@ func writeLocoPO(baseDir string, zipData io.ReadCloser) error {
 		localeCode := localeFromPath(poDir)
 		l, err := language.Parse(localeCode)
 		if err != nil {
-			log.Errorf("language.Parse failed for %s: %v", localeCode, err)
+			slog.Error("language.Parse failed for",
+				slog.String("locale", localeCode), slog.Any("err", err))
 			continue
 		}
 		if l.String() != localeCode {
 			// go's language parsing ends up with a different code than we expect. copy the file out so that we have both.
-			log.Infof("mismatch for code %s: %s", localeCode, l.String())
-			newPath := strings.Replace(zipPath, fmt.Sprintf("/%s/", localeCode), fmt.Sprintf("/%s/", l.String()), 1)
+			slog.Info("mismatch for code", slog.String("locale", localeCode),
+				slog.String("locStr", l.String()))
+			newPath := strings.Replace(zipPath, fmt.Sprintf("/%s/", localeCode),
+				fmt.Sprintf("/%s/", l.String()), 1)
 			poFile, _, err := createOutputFile(baseDir, newPath, true)
 			if err != nil {
-				log.Errorf("error creating dup output file for %s: %v", l.String(), err)
+				slog.Error("error creating dup output file for",
+					slog.String("loc", l.String()), slog.Any("err", err))
 				continue
 			}
 			_, err = writeZipFile(zipFile, poFile)
 			if err != nil && err != io.EOF {
-				log.Errorf("error writing dup output file for %s: %v", l.String(), err)
+				slog.Error("error creating dup output file for",
+					slog.String("loc", l.String()), slog.Any("err", err))
 			}
 			poFile.Close()
 		}
@@ -108,7 +113,8 @@ func outputFromZip(baseDir, zipPath string, zipFile *zip.File) (poDir string, er
 
 	_, err = writeZipFile(zipFile, poFile)
 	if err != nil && err != io.EOF {
-		log.Errorf("error writing contents to po file: %v", err)
+		slog.Error("error writing contents to po file",
+			slog.String("file", poFile.Name()), slog.Any("err", err))
 		return
 	}
 
@@ -137,7 +143,7 @@ func createOutputFile(baseDir, zipPath string, noskip bool) (poFile *os.File, po
 	localeDir, ok := locales[locale]
 	if !ok {
 		if !noskip {
-			log.Infof("skipping locale %s: not in locales map", locale)
+			slog.Info("skipping locale not in locales map", slog.String("locale", locale))
 			return
 		} else {
 			localeDir = locale

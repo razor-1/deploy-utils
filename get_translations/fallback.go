@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/text/language"
+	"log/slog"
 	"net/url"
 	"slices"
 	"strings"
+
+	"golang.org/x/text/language"
 )
 
 const (
@@ -31,7 +32,7 @@ func getFallbackLangs(apiKey string) error {
 	var allLocales []LocoLocale
 	err = jd.Decode(&allLocales)
 	if err != nil {
-		log.Errorf("error reading response: %v", err)
+		slog.Error("error reading response", slog.Any("err", err))
 		return err
 	}
 

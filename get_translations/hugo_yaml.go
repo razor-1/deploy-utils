@@ -5,12 +5,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/language"
 	"gopkg.in/yaml.v2"
 )
@@ -36,13 +36,13 @@ func getHugoYaml(apiKey, baseDir, filter string) error {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("error reading all response bytes: %v", err)
+		slog.Error("error reading all response bytes", slog.Any("err", err))
 		return err
 	}
 
 	zipReader, err := zip.NewReader(bytes.NewReader(body), int64(len(body)))
 	if err != nil {
-		log.Errorf("zip.NewReader error: %v", err)
+		slog.Error("zip.NewReader error", slog.Any("err", err))
 		return nil
 	}
 
@@ -58,12 +58,14 @@ func getHugoYaml(apiKey, baseDir, filter string) error {
 
 		f, err := zipFile.Open()
 		if err != nil {
-			log.Errorf("error opening file %s: %v", zipFile.Name, err)
+			slog.Error("error opening file",
+				slog.String("file", zipFile.Name), slog.Any("err", err))
 			continue
 		}
 		yamlData[localeCode], err = io.ReadAll(f)
 		if err != nil {
-			log.Errorf("error reading zip data for file %s: %v", zipFile.Name, err)
+			slog.Error("error reading zip data for file",
+				slog.String("file", zipFile.Name), slog.Any("err", err))
 		}
 		f.Close()
 	}
@@ -78,7 +80,8 @@ func getHugoYaml(apiKey, baseDir, filter string) error {
 
 		outFile, err := os.Create(fmt.Sprintf("%s.yaml", filepath.Join(baseDir, filename)))
 		if err != nil {
-			log.Errorf("error creating output file for %s: %v", filename, err)
+			slog.Error("error creating output file",
+				slog.String("file", filename), slog.Any("err", err))
 			continue
 		}
 		if outFile == nil {
@@ -89,14 +92,16 @@ func getHugoYaml(apiKey, baseDir, filter string) error {
 		yamlMap := make(map[string]string)
 		err = yaml.Unmarshal(data, &yamlMap)
 		if err != nil {
-			log.Errorf("error unmarshalling yaml for %s: %v", filename, err)
+			slog.Error("error unmarshalling yaml",
+				slog.String("file", filename), slog.Any("err", err))
 			outFile.Close()
 			continue
 		}
 
 		err = writeYamlFile(yamlMap, outFile)
 		if err != nil {
-			log.Errorf("error writing output file for %s: %v", filename, err)
+			slog.Error("error writing output file",
+				slog.String("file", filename), slog.Any("err", err))
 		}
 		outFile.Close()
 	}
