@@ -13,7 +13,8 @@ import (
 )
 
 type XCodeAsset struct {
-	Localizations map[string]map[string]any `json:"localizations"`
+	ExtractionState string                    `json:"extractionState"`
+	Localizations   map[string]map[string]any `json:"localizations"`
 }
 
 type XCodeStrings struct {
@@ -28,6 +29,7 @@ const (
 	stringsCatalogFilename = "Localizable." + XcStrings
 	plistCatalogFilename   = "InfoPlist." + XcStrings
 	plistTagName           = "ios-plist"
+	extractionStateManual  = "manual"
 )
 
 var (
@@ -94,14 +96,21 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 	if err != nil {
 		return err
 	}
+	// basically this changes "en-US" to "en"
+	catalog.SourceLanguage = locales[catalog.SourceLanguage]
 
 	isPlist := filter == plistTagName
 	skippedAndLogged := make(map[string]bool)
+
+	/*
+		/Users/jon/Library/Developer/Xcode/DerivedData/Hourglass-bzuxdrqootzlxiexzmcjiwkihtnb/SourcePackages/plugins/Hourglass.output/Hourglass/XCStringsToolPlugin/XCStringsTool/InfoPlist.swift
+	*/
 
 	// change the locale to be what we need
 	assetsToDelete := make(map[string]struct{}, len(plistAssetMap))
 	for asset, locs := range catalog.Strings {
 		locsToDelete := make([]string, 0)
+		locs.ExtractionState = extractionStateManual
 		for rawLocale, v := range locs.Localizations {
 			locale := iosLocale(rawLocale)
 			if locale != rawLocale {
