@@ -102,10 +102,6 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 	isPlist := filter == plistTagName
 	skippedAndLogged := make(map[string]bool)
 
-	/*
-		/Users/jon/Library/Developer/Xcode/DerivedData/Hourglass-bzuxdrqootzlxiexzmcjiwkihtnb/SourcePackages/plugins/Hourglass.output/Hourglass/XCStringsToolPlugin/XCStringsTool/InfoPlist.swift
-	*/
-
 	// change the locale to be what we need
 	assetsToDelete := make(map[string]struct{}, len(plistAssetMap))
 	for asset, locs := range catalog.Strings {
