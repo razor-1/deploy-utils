@@ -2,11 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
-	"net/http"
-	"net/url"
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -31,6 +27,12 @@ This is the "fallback" command mode.
 
 6. Pulls down the Android format and writes it into the resource directories.
 This is the "android" command mode.
+
+7. Pulls down the iOS strings and stringsdict and writes it into the Xcode project.
+This is the "ios" command mode.
+
+8. Pulls down the Xcode string catalogs and writes them.
+This is the "ioscat" command mode.
 */
 
 const (
@@ -103,32 +105,25 @@ func main() {
 		Args: cobra.MinimumNArgs(1),
 	}
 
-	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd)
+	iosCmd := &cobra.Command{
+		Use: "ios <directory>",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return updateiOSAssets(apiKey, args[0])
+		},
+		Args: cobra.MinimumNArgs(1),
+	}
+
+	iosCatCmd := &cobra.Command{
+		Use: "ioscat <directory>",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return updateiOSAssetsCatalog(apiKey, args[0])
+		},
+		Args: cobra.MinimumNArgs(1),
+	}
+
+	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd, iosCmd, iosCatCmd)
 	err := rootCmd.Execute()
 	if err != nil {
 		panic(err)
 	}
-}
-
-func locoRequest(apiKey, URL string, queryParams url.Values) (resp *http.Response, err error) {
-	reqURL, _ := url.Parse(URL)
-	reqURL.RawQuery = queryParams.Encode()
-
-	client := http.DefaultClient
-	client.Timeout = 20 * time.Second
-	req, err := http.NewRequest(http.MethodGet, reqURL.String(), nil)
-	if err != nil {
-		return
-	}
-	req.Header.Add(authHeader, fmt.Sprintf("Loco %s", apiKey))
-	resp, err = client.Do(req)
-	if err != nil {
-		slog.Error("error fetching", slog.Any("err", err))
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return resp, fmt.Errorf("status not OK: is %d", resp.StatusCode)
-	}
-	return
 }

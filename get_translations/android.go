@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	androidURL        = locoBaseURL + "/export/archive/xml.zip?index=id&format=android&filter=mobile-apps&fallback=auto"
+	androidURL        = locoBaseURL + "/export/archive/xml.zip"
 	locoAndroidFormat = "android"
 )
 
