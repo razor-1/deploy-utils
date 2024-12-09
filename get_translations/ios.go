@@ -45,6 +45,7 @@ var (
 		"schedules.territory.current-location-usage": {"NSLocationWhenInUseUsageDescription"},
 		"mobile.calendar.usage":                      {"NSCalendarsFullAccessUsageDescription", "NSCalendarsUsageDescription"},
 		"shortcut.last-month":                        {"shortcut.last-month"},
+		"Hourglass":                                  {"CFBundleName"},
 	}
 )
 

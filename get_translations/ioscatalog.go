@@ -30,6 +30,7 @@ const (
 	plistCatalogFilename   = "InfoPlist." + XcStrings
 	plistTagName           = "ios-plist"
 	extractionStateManual  = "manual"
+	bundleNameAsset        = "CFBundleName"
 )
 
 var (
@@ -117,7 +118,7 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 			if skippedAndLogged[locale] {
 				locsToDelete = append(locsToDelete, locale)
 			} else if !isValidDir(filepath.Join(baseDir, fmt.Sprintf("%s.lproj", locale))) {
-				slog.Info("skipping locale without lproj directory", slog.String("locale", locale))
+				slog.Debug("skipping locale without lproj directory", slog.String("locale", locale))
 				locsToDelete = append(locsToDelete, locale)
 				skippedAndLogged[locale] = true
 			}
@@ -127,6 +128,9 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 		}
 		for _, plKey := range plistAssetMap[asset] {
 			catalog.Strings[plKey] = catalog.Strings[asset]
+			if plKey == bundleNameAsset {
+				checkBundleNameLength(catalog.Strings[plKey].Localizations)
+			}
 			if plKey != asset {
 				assetsToDelete[asset] = struct{}{}
 			}
@@ -149,4 +153,20 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 	defer outFile.Close()
 	err = json.NewEncoder(outFile).Encode(catalog)
 	return err
+}
+
+func checkBundleNameLength(localizations map[string]map[string]any) {
+	for locale, valMap := range localizations {
+		if stringUnit, ok := valMap["stringUnit"]; ok {
+			if suMap, ok := stringUnit.(map[string]any); ok {
+				valInt := suMap["value"]
+				var value string
+				value, _ = valInt.(string)
+				if len(value) == 0 || len(value) > 15 {
+					slog.Warn(bundleNameAsset+" too long", slog.String("locale", locale),
+						slog.Int("length", len(value)))
+				}
+			}
+		}
+	}
 }
