@@ -118,7 +118,7 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 			if skippedAndLogged[locale] {
 				locsToDelete = append(locsToDelete, locale)
 			} else if !isValidDir(filepath.Join(baseDir, fmt.Sprintf("%s.lproj", locale))) {
-				slog.Debug("skipping locale without lproj directory", slog.String("locale", locale))
+				slog.Info("skipping locale without lproj directory", slog.String("locale", locale))
 				locsToDelete = append(locsToDelete, locale)
 				skippedAndLogged[locale] = true
 			}
