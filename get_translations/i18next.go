@@ -15,7 +15,6 @@ const (
 	locoJsonExportURL = locoBaseURL + "/export/all.json"
 	locoI18NextFormat = "i18next4"
 	locoProject       = "hourglass"
-	locoFallback      = "auto"
 )
 
 // retrieve loco assets in i18next format and write each locale's data to a separate json file
@@ -24,7 +23,7 @@ func getI18Next(apiKey, dir, filter string) error {
 	qp.Add("format", locoI18NextFormat)
 	qp.Add("fallback", locoFallback)
 	if filter != "" {
-		qp.Add("filter", filter)
+		qp.Add(locoFilter, filter)
 	}
 	resp, err := locoRequest(apiKey, locoJsonExportURL, qp)
 	if err != nil {
