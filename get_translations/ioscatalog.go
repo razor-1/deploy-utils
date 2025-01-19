@@ -117,8 +117,8 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 			// if the lproj directory doesn't exist for this locale, then add it to the remove list; we don't want it
 			if skippedAndLogged[locale] {
 				locsToDelete = append(locsToDelete, locale)
-			} else if !isValidDir(filepath.Join(baseDir, fmt.Sprintf("%s.lproj", locale))) {
-				slog.Info("skipping locale without lproj directory", slog.String("locale", locale))
+			} else if !validiOSLocales[locale] {
+				slog.Info("skipping", slog.String("locale", locale))
 				locsToDelete = append(locsToDelete, locale)
 				skippedAndLogged[locale] = true
 			}
@@ -169,4 +169,59 @@ func checkBundleNameLength(localizations map[string]map[string]any) {
 			}
 		}
 	}
+}
+
+var validiOSLocales = map[string]bool{
+	"en":      true,
+	"pt":      true,
+	"es":      true,
+	"it":      true,
+	"nl":      true,
+	"de":      true,
+	"fr":      true,
+	"pl":      true,
+	"sv":      true,
+	"pt-PT":   true,
+	"da":      true,
+	"sw":      true,
+	"lt":      true,
+	"ko":      true,
+	"ru":      true,
+	"cs":      true,
+	"hr":      true,
+	"ja":      true,
+	"bg":      true,
+	"ro":      true,
+	"hu":      true,
+	"uk":      true,
+	"el":      true,
+	"vi":      true,
+	"th":      true,
+	"et":      true,
+	"fi":      true,
+	"id":      true,
+	"ht":      true,
+	"kea":     true,
+	"sl":      true,
+	"fil":     true,
+	"gu":      true,
+	"tr":      true,
+	"sq":      true,
+	"zh-Hans": true,
+	"sk":      true,
+	"zh-Hant": true,
+	"af":      true,
+	"ee":      true,
+	"vec":     true,
+	"ca":      true,
+	"gl":      true,
+	"si":      true,
+	"jam":     true,
+	"hy":      true,
+	"ms":      true,
+	"ka":      true,
+	"az":      true,
+	"ne":      true,
+	"fon":     true,
+	"ak":      true,
 }
