@@ -21,7 +21,8 @@ const (
 func getPOExport(apiKey string, args []string) error {
 	qp := url.Values{}
 	qp.Add("index", "name")
-	qp.Add("filter", "web-pub")
+	// no filter, to avoid issues where a missing tag leads to a missing asset
+	// qp.Add("filter", "web-pub")
 	qp.Add("fallback", "en-US")
 
 	resp, err := locoRequest(apiKey, locoPOExportURL, qp)
@@ -62,6 +63,9 @@ func writeLocoPO(baseDir string, zipData io.ReadCloser) error {
 		}
 
 		localeCode := localeFromPath(poDir)
+		if localeCode == "zh@hant" {
+			localeCode = "zh-Hant"
+		}
 		l, err := language.Parse(localeCode)
 		if err != nil {
 			slog.Error("language.Parse failed for",
