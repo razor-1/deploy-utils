@@ -44,6 +44,7 @@ var (
 		"touchid.authentication-prompt":              {"NSFaceIDUsageDescription"},
 		"schedules.territory.current-location-usage": {"NSLocationWhenInUseUsageDescription"},
 		"mobile.calendar.usage":                      {"NSCalendarsFullAccessUsageDescription", "NSCalendarsUsageDescription"},
+		"mobile.camera.usage":                        {"NSCameraUsageDescription"},
 		"shortcut.last-month":                        {"shortcut.last-month"},
 		"Hourglass":                                  {bundleNameAsset},
 	}

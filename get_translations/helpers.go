@@ -27,7 +27,7 @@ func locoRequest(apiKey, URL string, queryParams url.Values) (resp *http.Respons
 	reqURL.RawQuery = queryParams.Encode()
 
 	client := http.DefaultClient
-	client.Timeout = 20 * time.Second
+	client.Timeout = 30 * time.Second
 	req, err := http.NewRequest(http.MethodGet, reqURL.String(), nil)
 	slog.Info(reqURL.String())
 	if err != nil {
