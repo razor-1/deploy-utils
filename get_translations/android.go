@@ -57,7 +57,7 @@ func updateAndroidAssets(apiKey, baseDir, tag string) error {
 	qp.Add("fallback", locoFallback)
 	qp.Add("index", "id")
 	if tag != "" {
-		qp.Add("filter", tag)
+		qp.Add(locoFilter, tag)
 	}
 	resp, err := locoRequest(apiKey, androidURL, qp)
 	if err != nil {
