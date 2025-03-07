@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -51,7 +52,9 @@ func generateAssets(apiKey string, args []string) error {
 }
 
 func getAssets(apiKey string) (assets []LocoAsset, err error) {
-	resp, err := locoRequest(apiKey, locoAssetsURL, nil)
+	qp := url.Values{}
+	qp.Add(locoFilter, backendTag)
+	resp, err := locoRequest(apiKey, locoAssetsURL, qp)
 	if err != nil {
 		return
 	}

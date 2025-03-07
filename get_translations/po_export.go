@@ -16,13 +16,13 @@ import (
 
 const (
 	locoPOExportURL = locoBaseURL + "/export/archive/po.zip"
+	backendTag      = "backend"
 )
 
 func getPOExport(apiKey string, args []string) error {
 	qp := url.Values{}
 	qp.Add("index", "name")
-	// no filter, to avoid issues where a missing tag leads to a missing asset
-	// qp.Add("filter", "web-pub")
+	qp.Add(locoFilter, backendTag)
 	qp.Add("fallback", "en-US")
 
 	resp, err := locoRequest(apiKey, locoPOExportURL, qp)
