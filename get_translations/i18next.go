@@ -22,6 +22,8 @@ func getI18Next(apiKey, dir, filter string) error {
 	qp := url.Values{}
 	qp.Add("format", locoI18NextFormat)
 	qp.Add("fallback", locoFallback)
+	// printf causes the python and other formatting to be converted to i18next
+	qp.Add("printf", "i18next")
 	if filter != "" {
 		qp.Add(locoFilter, filter)
 	}
