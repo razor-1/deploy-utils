@@ -33,6 +33,9 @@ This is the "ios" command mode.
 
 8. Pulls down the Xcode string catalogs and writes them.
 This is the "ioscat" command mode.
+
+9. Updates all the translations for an asset to change from python-style to i18next style formatting
+This is the "i18conv" command mode. Note that it requires an API key that allows writing.
 */
 
 const (
@@ -121,7 +124,19 @@ func main() {
 		Args: cobra.MinimumNArgs(1),
 	}
 
-	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd, iosCmd, iosCatCmd)
+	i18ConvCmd := &cobra.Command{
+		Use: "i18conv <asset>",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var formatKey string
+			if len(args) > 1 {
+				formatKey = args[1]
+			}
+			return i18nextConvertFormat(apiKey, args[0], formatKey)
+		},
+		Args: cobra.MinimumNArgs(1),
+	}
+
+	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd, iosCmd, iosCatCmd, i18ConvCmd)
 	err := rootCmd.Execute()
 	if err != nil {
 		panic(err)
