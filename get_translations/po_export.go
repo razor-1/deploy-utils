@@ -63,7 +63,6 @@ func writeLocoPO(baseDir string, zipData io.ReadCloser) error {
 		}
 
 		localeCode := localeFromPath(poDir)
-		fmt.Println("using locale code", localeCode)
 		l, err := language.Parse(localeCode)
 		if err != nil {
 			slog.Error("language.Parse failed for",
