@@ -63,9 +63,6 @@ func writeLocoPO(baseDir string, zipData io.ReadCloser) error {
 		}
 
 		localeCode := localeFromPath(poDir)
-		if localeCode == "zh@hant" {
-			localeCode = "zh-Hant"
-		}
 		l, err := language.Parse(localeCode)
 		if err != nil {
 			slog.Error("language.Parse failed for",
@@ -101,7 +98,13 @@ func localeFromPath(dir string) string {
 	if len(parts) < 2 {
 		return ""
 	}
-	return parts[len(parts)-2]
+	localePart := parts[len(parts)-2]
+	// the path uses '@' to indicate the script
+	atSplit := strings.Split(localePart, "@")
+	if len(atSplit) > 1 {
+		return fmt.Sprintf("%s-%s", atSplit[0], strings.Title(atSplit[1]))
+	}
+	return localePart
 }
 
 func outputFromZip(baseDir, zipPath string, zipFile *zip.File) (poDir string, err error) {
