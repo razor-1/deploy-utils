@@ -224,4 +224,6 @@ var validiOSLocales = map[string]bool{
 	"ne":      true,
 	"fon":     true,
 	"ak":      true,
+	"mfe":     true,
+	"sr-Latn": true,
 }
