@@ -160,7 +160,6 @@ func createOutputFile(baseDir, zipPath string, noskip bool) (poFile *os.File, po
 			localeDir = locale
 		}
 	}
-	fmt.Println("output dir", localeDir)
 	poDir = filepath.Join(baseDir, localeDir, "LC_MESSAGES")
 	err = os.MkdirAll(poDir, os.ModePerm)
 	if err != nil {
