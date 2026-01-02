@@ -99,12 +99,16 @@ func localeFromPath(dir string) string {
 		return ""
 	}
 	localePart := parts[len(parts)-2]
+	return normalizeScript(localePart)
+}
+
+func normalizeScript(in string) string {
 	// the path uses '@' to indicate the script
-	atSplit := strings.Split(localePart, "@")
+	atSplit := strings.Split(in, "@")
 	if len(atSplit) > 1 {
 		return fmt.Sprintf("%s-%s", atSplit[0], strings.Title(atSplit[1]))
 	}
-	return localePart
+	return in
 }
 
 func outputFromZip(baseDir, zipPath string, zipFile *zip.File) (poDir string, err error) {
@@ -146,7 +150,7 @@ func createOutputFile(baseDir, zipPath string, noskip bool) (poFile *os.File, po
 		return
 	}
 	// change from en_US to en-US, for example
-	locale := strings.Replace(components[2], "_", "-", 1)
+	locale := strings.Replace(normalizeScript(components[2]), "_", "-", 1)
 	localeDir, ok := locales[locale]
 	if !ok {
 		if !noskip {
