@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 )
 
 const (
@@ -20,27 +21,29 @@ const (
 var (
 	// special things we need to do to get the proper output directory names
 	androidLocaleMap = map[string]string{
-		"pl-PL":   "pl",
-		"sv-SE":   "sv",
-		"da-DK":   "da",
-		"lt-LT":   "lt",
-		"ko-KR":   "ko",
-		"cs-CZ":   "cs",
-		"hr-HR":   "hr",
-		"bg-BG":   "bg",
-		"ja-JP":   "ja",
-		"ro-RO":   "ro",
-		"zh-CN":   "zh",
-		"uk-UA":   "uk",
-		"hu-HU":   "hu",
-		"el-GR":   "el",
-		"vi-VN":   "vi",
-		"th-TH":   "th",
-		"fi-FI":   "fi",
-		"gu-IN":   "gu",
-		"id-ID":   "in", // java is really cool and uses "in" for indonesian
-		"tr-TR":   "tr",
-		"zh-Hant": "b+zh+Hant", // this is the android BCP 47 thing
+		"pl-PL":    "pl",
+		"sv-SE":    "sv",
+		"da-DK":    "da",
+		"lt-LT":    "lt",
+		"ko-KR":    "ko",
+		"cs-CZ":    "cs",
+		"hr-HR":    "hr",
+		"bg-BG":    "bg",
+		"ja-JP":    "ja",
+		"ro-RO":    "ro",
+		"zh-CN":    "zh",
+		"uk-UA":    "uk",
+		"hu-HU":    "hu",
+		"el-GR":    "el",
+		"vi-VN":    "vi",
+		"th-TH":    "th",
+		"fi-FI":    "fi",
+		"gu-IN":    "gu",
+		"id-ID":    "in", // java is really cool and uses "in" for indonesian
+		"tr-TR":    "tr",
+		"zh-Hant":  "b+zh+Hant", // this is the android BCP 47 thing
+		"rmn-Cyrl": "b+rmn+Cyrl",
+		"he":       "iw", // another cool legacy java thing
 	}
 
 	androidResourceRegex = regexp.MustCompile("values-([a-z]{2,})-?r?([A-Za-z]{2,})?")
@@ -84,10 +87,13 @@ func updateAndroidAssets(apiKey, baseDir, tag string) error {
 			continue
 		}
 
+		slog.Info("dir", slog.String("dir", dir))
+
 		outputDir := filepath.Join(baseDir, filepath.Base(dir))
 		if !isValidDir(outputDir) {
 			// output directory doesn't exist. we might need to map it
 			matches := androidResourceRegex.FindStringSubmatch(filepath.Base(dir))
+			matches = slices.DeleteFunc(matches, func(s string) bool { return s == "" })
 			if len(matches) < 2 {
 				slog.Error("cannot find matching resource for dir", slog.String("filename", zipFile.Name))
 				continue
@@ -108,7 +114,9 @@ func updateAndroidAssets(apiKey, baseDir, tag string) error {
 			outputDir = filepath.Join(baseDir, newOutputPath)
 			if !isValidDir(outputDir) {
 				slog.Error("cannot find matching resource for dir after mapping",
-					slog.String("filename", zipFile.Name))
+					slog.String("filename", zipFile.Name),
+					slog.String("outputDir", outputDir),
+					slog.String("locale", locale))
 				continue
 			}
 		}
