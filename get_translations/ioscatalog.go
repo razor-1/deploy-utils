@@ -37,6 +37,23 @@ var (
 	iosFilters = []string{
 		"ios-strings,ios-plurals", plistTagName,
 	}
+
+	iosLocaleMap = map[string]string{
+		"pt-BR":  "pt",
+		"tw":     "ak",
+		"zh-CN":  "zh-Hans",
+		"tl":     "fil",
+		"vec-BR": "vec",
+	}
+
+	plistAssetMap = map[string][]string{
+		"touchid.authentication-prompt":              {"NSFaceIDUsageDescription"},
+		"schedules.territory.current-location-usage": {"NSLocationWhenInUseUsageDescription"},
+		"mobile.calendar.usage":                      {"NSCalendarsFullAccessUsageDescription", "NSCalendarsUsageDescription"},
+		"mobile.camera.usage":                        {"NSCameraUsageDescription"},
+		"shortcut.last-month":                        {"shortcut.last-month"},
+		"Hourglass":                                  {bundleNameAsset},
+	}
 )
 
 func updateiOSAssetsCatalog(apiKey, baseDir string) error {
@@ -228,4 +245,16 @@ var validiOSLocales = map[string]bool{
 	"sr-Latn": true,
 	"ar":      true,
 	"he":      true,
+}
+
+func iosLocale(rawLocaleName string) string {
+	if overrideLocale, ok := iosLocaleMap[rawLocaleName]; ok {
+		return overrideLocale
+	}
+
+	locale := locales[rawLocaleName]
+	if locale != "" {
+		return locale
+	}
+	return rawLocaleName
 }
