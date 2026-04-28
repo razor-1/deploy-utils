@@ -108,16 +108,9 @@ func main() {
 		Args: cobra.MinimumNArgs(1),
 	}
 
-	iosCmd := &cobra.Command{
-		Use: "ios <directory>",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return updateiOSAssets(apiKey, args[0])
-		},
-		Args: cobra.MinimumNArgs(1),
-	}
-
 	iosCatCmd := &cobra.Command{
-		Use: "ioscat <directory>",
+		Use:     "ioscat <directory>",
+		Aliases: []string{"ios"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return updateiOSAssetsCatalog(apiKey, args[0])
 		},
@@ -136,7 +129,7 @@ func main() {
 		Args: cobra.MinimumNArgs(1),
 	}
 
-	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd, iosCmd, iosCatCmd, i18ConvCmd)
+	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd, iosCatCmd, i18ConvCmd)
 	err := rootCmd.Execute()
 	if err != nil {
 		panic(err)
