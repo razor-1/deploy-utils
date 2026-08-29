@@ -23,13 +23,14 @@ var (
 )
 
 type LocoAsset struct {
-	ID           string `json:"id"` // this is all we care about right now. actual loco json has much more info
-	GoIdentifier string `json:"-"`
+	ID           string   `json:"id"`
+	Tags         []string `json:"tags"`
+	GoIdentifier string   `json:"-"`
 }
 
 // pull down the assets from loco, and create a go file with all their names as constants
 func generateAssets(apiKey string, args []string) error {
-	locoAssets, err := getAssets(apiKey)
+	locoAssets, err := getAssets(apiKey, backendTag)
 	if err != nil {
 		return err
 	}
@@ -51,9 +52,13 @@ func generateAssets(apiKey string, args []string) error {
 	return tmpl.Execute(outFile, locoAssets)
 }
 
-func getAssets(apiKey string) (assets []LocoAsset, err error) {
+// getAssets retrieves assets from loco. If filter is non-empty, only assets tagged with it are
+// returned; otherwise all assets are returned regardless of tag.
+func getAssets(apiKey, filter string) (assets []LocoAsset, err error) {
 	qp := url.Values{}
-	qp.Add(locoFilter, backendTag)
+	if filter != "" {
+		qp.Add(locoFilter, filter)
+	}
 	resp, err := locoRequest(apiKey, locoAssetsURL, qp)
 	if err != nil {
 		return

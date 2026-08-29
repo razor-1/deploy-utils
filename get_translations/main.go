@@ -36,6 +36,10 @@ This is the "ioscat" command mode.
 
 9. Updates all the translations for an asset to change from python-style to i18next style formatting
 This is the "i18conv" command mode. Note that it requires an API key that allows writing.
+
+10. Finds loco assets that don't appear to be referenced in any of the backend, web, www, android,
+or ios codebases, so they can be reviewed for deletion.
+This is the "deadassets" command mode.
 */
 
 const (
@@ -129,7 +133,33 @@ func main() {
 		Args: cobra.MinimumNArgs(1),
 	}
 
-	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd, iosCatCmd, i18ConvCmd)
+	var backendPath, webPath, wwwPath, androidPath, iosPath string
+	var excludes []string
+	deadAssetsCmd := &cobra.Command{
+		Use: "deadassets",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			repoPaths := map[string]string{
+				"backend": backendPath,
+				"web":     webPath,
+				"www":     wwwPath,
+				"android": androidPath,
+				"ios":     iosPath,
+			}
+			return findDeadAssets(apiKey, repoPaths, excludes)
+		},
+	}
+	deadAssetsCmd.Flags().StringVar(&backendPath, "backend", "", "path to the backend (hourglass) repo checkout")
+	deadAssetsCmd.Flags().StringVar(&webPath, "web", "", "path to the hourglass-js repo checkout")
+	deadAssetsCmd.Flags().StringVar(&wwwPath, "www", "", "path to the hourglass-www repo checkout")
+	deadAssetsCmd.Flags().StringVar(&androidPath, "android", "", "path to the Android app repo checkout")
+	deadAssetsCmd.Flags().StringVar(&iosPath, "ios", "", "path to the iOS app repo checkout")
+	deadAssetsCmd.Flags().StringArrayVar(&excludes, "exclude", nil,
+		"asset id to exclude from the report, in addition to the built-in defaultExcludes list; "+
+			"repeatable. an entry ending in \".\" excludes every asset with that dotted prefix "+
+			"(e.g. \"special-talk.\")")
+
+	rootCmd.AddCommand(poCmd, assetsCmd, jsonCmd, hugoYamlCmd, fallbackCmd, androidCmd, iosCatCmd, i18ConvCmd,
+		deadAssetsCmd)
 	err := rootCmd.Execute()
 	if err != nil {
 		panic(err)
