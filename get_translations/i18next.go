@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/text/language"
 )
@@ -51,6 +52,8 @@ func getI18Next(apiKey, dir, filter string) error {
 				fmt.Printf("could not find locale mapping for %s. using %s\n", locale, langFile)
 			}
 
+			checkBlankTranslations(locale, data, "")
+
 			fileName := filepath.Join(dir, fmt.Sprintf("%s.json", langFile))
 			err = writeToFile(fileName, data)
 			if err != nil {
@@ -89,6 +92,26 @@ func writeToFile(path string, data interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// checkBlankTranslations recursively walks a decoded i18next namespace looking for blank (or
+// whitespace-only) string leaves, which usually indicate a source error in loco. It prints the
+// locale and the dotted key path where it found the problem.
+func checkBlankTranslations(locale string, data interface{}, keyPath string) {
+	switch v := data.(type) {
+	case map[string]interface{}:
+		for key, val := range v {
+			childPath := key
+			if keyPath != "" {
+				childPath = keyPath + "." + key
+			}
+			checkBlankTranslations(locale, val, childPath)
+		}
+	case string:
+		if strings.TrimSpace(v) == "" {
+			fmt.Printf("blank translation found: locale=%s key=%s\n", locale, keyPath)
+		}
+	}
 }
 
 // count how many keys in localeCodes have the supplied base

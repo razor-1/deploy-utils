@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -127,6 +128,7 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 		locs.ExtractionState = extractionStateManual
 		for rawLocale, v := range locs.Localizations {
 			locale := iosLocale(rawLocale)
+			checkBlankTranslation(locale, asset, v)
 			if locale != rawLocale {
 				catalog.Strings[asset].Localizations[locale] = v
 				locsToDelete = append(locsToDelete, rawLocale)
@@ -170,6 +172,23 @@ func processTranslationsCatalog(filter, baseDir string, resp *http.Response) err
 	defer outFile.Close()
 	err = json.NewEncoder(outFile).Encode(catalog)
 	return err
+}
+
+// checkBlankTranslation looks for a blank (or whitespace-only) stringUnit value, which usually
+// indicates a source error in loco. It prints the locale and asset id where it found the problem.
+func checkBlankTranslation(locale, asset string, v map[string]any) {
+	stringUnit, ok := v["stringUnit"]
+	if !ok {
+		return
+	}
+	suMap, ok := stringUnit.(map[string]any)
+	if !ok {
+		return
+	}
+	value, _ := suMap["value"].(string)
+	if strings.TrimSpace(value) == "" {
+		fmt.Printf("blank translation found: locale=%s key=%s\n", locale, asset)
+	}
 }
 
 func checkBundleNameLength(localizations map[string]map[string]any) {
@@ -245,6 +264,7 @@ var validiOSLocales = map[string]bool{
 	"sr-Latn": true,
 	"ar":      true,
 	"he":      true,
+	"ty":      true,
 }
 
 func iosLocale(rawLocaleName string) string {
