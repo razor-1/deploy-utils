@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log/slog"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strings"
 )
 
 const (
@@ -136,6 +138,8 @@ func updateAndroidAssets(apiKey, baseDir, tag string) error {
 			continue
 		}
 
+		checkAndroidBlankTranslations(filepath.Base(dir), xmlData)
+
 		outFilePath := filepath.Join(outputDir, "strings.xml")
 		outFile, fileErr := os.OpenFile(outFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		if fileErr != nil {
@@ -153,4 +157,29 @@ func updateAndroidAssets(apiKey, baseDir, tag string) error {
 	}
 
 	return nil
+}
+
+// androidStringsXML mirrors the subset of an android strings.xml resource file needed to check
+// for blank translations.
+type androidStringsXML struct {
+	Strings []struct {
+		Name  string `xml:"name,attr"`
+		Value string `xml:",chardata"`
+	} `xml:"string"`
+}
+
+// checkAndroidBlankTranslations looks for blank (or whitespace-only) string values in an android
+// strings.xml payload, which usually indicates a source error in loco. It prints the locale
+// (resource directory) and key where it found the problem.
+func checkAndroidBlankTranslations(locale string, xmlData []byte) {
+	var strs androidStringsXML
+	if err := xml.Unmarshal(xmlData, &strs); err != nil {
+		slog.Error("error unmarshaling android strings xml for blank check", slog.Any("err", err))
+		return
+	}
+	for _, s := range strs.Strings {
+		if strings.TrimSpace(s.Value) == "" {
+			fmt.Printf("blank translation found: locale=%s key=%s\n", locale, s.Name)
+		}
+	}
 }

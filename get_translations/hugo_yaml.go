@@ -98,6 +98,12 @@ func getHugoYaml(apiKey, baseDir, filter string) error {
 			continue
 		}
 
+		for asset, translation := range yamlMap {
+			if strings.TrimSpace(translation) == "" {
+				fmt.Printf("blank translation found: locale=%s key=%s\n", localeCode, asset)
+			}
+		}
+
 		err = writeYamlFile(yamlMap, outFile)
 		if err != nil {
 			slog.Error("error writing output file",
